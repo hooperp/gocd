@@ -1,109 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cruise xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cruise-config.xsd" schemaVersion="77">
   <server artifactsdir="artifacts" commandRepositoryLocation="default" serverId="d06e36f2-1911-4e57-abe3-3f4d2c7e8025" />
-  <pipelines group="orchestra-integration-live">
-    <pipeline name="orchestra-integration-live">
+  <pipelines group="OrchestraIntegration">
+    <pipeline name="pipelineOrchestraBuildAndDeployToNexus" isLocked="false" template="templateBuildAndDeployToNexus">
       <materials>
-        <git url="ssh://git@stash.ipttools.info/ipto/iptorchestraintegration.git" branch="develop" />
+        <git url="ssh://git@stash.ipttools.info/" branch="develop" materialName="checkoutCode" />
       </materials>
-      <stage name="stageCleardownNexus" fetchMaterials="false">
-        <jobs>
-          <job name="jobCleardownNexus">
-            <tasks>
-              <exec command="/opt/jenkins_ci_tools/scripts/delete_nexus_repos.sh" />
-            </tasks>
-          </job>
-        </jobs>
-      </stage>
-      <stage name="stageBUILD">
-        <jobs>
-          <job name="jobBUILD">
-            <tasks>
-              <exec command="mvn" workingdir="Function">
-                <arg>deploy</arg>
-              </exec>
-            </tasks>
-          </job>
-        </jobs>
-      </stage>
-      <stage name="stageDEPLOY_RPM" fetchMaterials="false">
-        <jobs>
-          <job name="jobDEPLOY_RPM">
-            <tasks>
-              <exec command="mvn" workingdir="ServiceDescription">
-                <arg>-Dmvn_version=0.194-SNAPSHOT</arg>
-                <arg>deploy</arg>
-              </exec>
-            </tasks>
-          </job>
-        </jobs>
-      </stage>
-      <stage name="stagePREPARE_RELEASE" fetchMaterials="false">
-        <jobs>
-          <job name="jobPREPARE_RELEASE">
-            <tasks>
-              <exec command="/opt/jenkins_ci_tools/scripts/prepareRelease.sh" workingdir="Function">
-                <arg>pom.xml</arg>
-                <arg>0.194-SNAPSHOT</arg>
-                <arg>ipt-orchestra-integration</arg>
-              </exec>
-            </tasks>
-          </job>
-        </jobs>
-      </stage>
-      <stage name="stageDELOY_RELEASE" fetchMaterials="false">
-        <jobs>
-          <job name="jobDEPLOY_RELESASE">
-            <tasks>
-              <exec command="mvn" workingdir="Function">
-                <arg>deploy</arg>
-              </exec>
-            </tasks>
-          </job>
-        </jobs>
-      </stage>
-      <stage name="stageReleaseRPM">
-        <jobs>
-          <job name="jobReleaseRPM">
-            <tasks>
-              <exec command="mvn" workingdir="ServiceDescription">
-                <arg>"versions:set"</arg>
-                <arg>-DnewVersion=0.194</arg>
-                <arg>-Dmvn_version=0.194</arg>
-                <arg>deploy</arg>
-                <runif status="passed" />
-              </exec>
-            </tasks>
-          </job>
-        </jobs>
-      </stage>
-      <stage name="stageINCREMENT_VERSION_NUMBER" fetchMaterials="false">
-        <jobs>
-          <job name="jobINCREMENT_VERSION_NUMBER">
-            <tasks>
-              <exec command="mvn" workingdir="Function">
-                <arg>versions:set</arg>
-                <arg>-DnewVersion=0.195-SNAPSHOT</arg>
-              </exec>
-            </tasks>
-          </job>
-        </jobs>
-      </stage>
-      <stage name="stageREBUILDAWS" fetchMaterials="false">
-        <jobs>
-          <job name="jobREBUILDAWS">
-            <tasks>
-              <exec command="/opt/jenkins_ci_tools/scripts/create-all.sh" />
-            </tasks>
-          </job>
-        </jobs>
-      </stage>
     </pipeline>
-    <pipeline name="pipelineBuildDockerContainer" isLocked="false">
+  </pipelines>
+  <pipelines group="BuildandRunDocker">
+    <pipeline name="Docker" isLocked="false">
       <materials>
-        <pipeline pipelineName="orchestra-integration-live" stageName="stageREBUILDAWS" materialName="BuildAndDeploy" />
+        <pipeline pipelineName="pipelineOrchestraBuildAndDeployToNexus" stageName="stageBUILD_AND_DEPLOY" materialName="BuildAndDeploy" />
       </materials>
       <stage name="stageBuildDockerImage">
+        <approval type="manual" />
         <jobs>
           <job name="jobBuildDockerImage">
             <tasks>
@@ -129,54 +40,49 @@
       </stage>
     </pipeline>
   </pipelines>
+  <pipelines group="IdentityResolution">
+    <pipeline name="pipelineBuildAndDeployIdentityResolutionToNexus" isLocked="false" template="templateBuildAndDeployToNexus">
+      <materials>
+        <git url="ssh://git@stash.ipttools.info/re/ipt-ms-identity-resolution.git" branch="develop" materialName="checkoutCode" />
+      </materials>
+    </pipeline>
+  </pipelines>
   <templates>
-    <pipeline name="templateOrchestraIntegration">
-      <stage name="stageBuild" artifactCleanupProhibited="true" cleanWorkingDir="true">
+    <pipeline name="templateBuildAndDeployToNexus">
+      <stage name="stageBUILD_AND_DEPLOY">
         <jobs>
-          <job name="jobOrchestraIntegrationBUILD">
+          <job name="jobBUILD_AND_DEPLOY">
             <tasks>
-              <exec command="mvn" workingdir="Function">
-                <arg>clean</arg>
-                <arg>package</arg>
-              </exec>
-            </tasks>
-          </job>
-          <job name="jobOrchestraIntegrationDEPLOY">
-            <tasks>
-              <exec command="mvn" workingdir="ServiceDescription">
-                <arg>-Dmvn_version=0.194-SNAPSHOT</arg>
-                <arg>deploy</arg>
+              <exec command="/opt/jenkins_ci_tools/scripts/DeployAndRelease.sh">
                 <runif status="passed" />
               </exec>
             </tasks>
           </job>
-          <job name="jobPrepareRelease">
-            <tasks>
-              <exec command="/opt/jenkins_ci_tools/scripts/prepareRelease.sh" workingdir="Function">
-                <arg>pom.xml</arg>
-                <arg>0.194-SNAPSHOT</arg>
-                <arg>ipt-orchestra-integration</arg>
-                <runif status="passed" />
-              </exec>
-            </tasks>
-          </job>
-          <job name="jobDeployRelease">
-            <tasks>
-              <exec command="mvn" workingdir="Function">
-                <arg>deploy</arg>
-                <runif status="passed" />
-              </exec>
-            </tasks>
-          </job>
-          <job name="jobVersionPOM">
-            <tasks>
-              <exec command="mvn" workingdir="Function">
-                <arg>versions:set</arg>
-                <arg>-DnewVersion=0.195-SNAPSHOT</arg>
-                <runif status="passed" />
-              </exec>
-            </tasks>
-          </job>
+        </jobs>
+      </stage>
+      <stage name="stageDEPLOY_RPM" fetchMaterials="false">
+        <jobs>
+          <job name="jobDEPLOY_RPM" />
+        </jobs>
+      </stage>
+      <stage name="stagePREPARE_RELEASE" fetchMaterials="false">
+        <jobs>
+          <job name="jobPREPARE_RELEASE" />
+        </jobs>
+      </stage>
+      <stage name="stageDELOY_RELEASE" fetchMaterials="false">
+        <jobs>
+          <job name="jobDEPLOY_RELESASE" />
+        </jobs>
+      </stage>
+      <stage name="stageReleaseRPM">
+        <jobs>
+          <job name="jobReleaseRPM" />
+        </jobs>
+      </stage>
+      <stage name="stageINCREMENT_VERSION_NUMBER" fetchMaterials="false">
+        <jobs>
+          <job name="jobINCREMENT_VERSION_NUMBER" />
         </jobs>
       </stage>
     </pipeline>
@@ -207,13 +113,6 @@
           <value>/opt/jenkins_ci_tools/scripts:/opt/jdk1.8.0_72/bin:/opt/apache-maven-3.0.5/bin:/opt/jdk1.8.0_72//bin:/opt/apache-maven-3.0.5//bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin</value>
         </variable>
       </environmentvariables>
-      <agents>
-        <physical uuid="3a4c4767-0575-4b61-b4cb-a5b2f6290983" />
-      </agents>
-      <pipelines>
-        <pipeline name="orchestra-integration-live" />
-        <pipeline name="pipelineBuildDockerContainer" />
-      </pipelines>
     </environment>
   </environments>
   <agents>
