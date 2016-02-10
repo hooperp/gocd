@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cruise xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cruise-config.xsd" schemaVersion="77">
+  <server artifactsdir="artifacts" commandRepositoryLocation="default" serverId="d06e36f2-1911-4e57-abe3-3f4d2c7e8025" />
+  <pipelines group="orchestra-integration-live">
+    <pipeline name="orchestra-integration-live">
+      <materials>
+        <git url="ssh://git@stash.ipttools.info/ipto/iptorchestraintegration.git" branch="develop" />
+      </materials>
+      <stage name="stageCleardownNexus" fetchMaterials="false">
+        <jobs>
+          <job name="jobCleardownNexus">
+            <tasks>
+              <exec command="/opt/jenkins_ci_tools/scripts/delete_nexus_repos.sh" />
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageBUILD">
+        <jobs>
+          <job name="jobBUILD">
+            <tasks>
+              <exec command="mvn" workingdir="Function">
+                <arg>deploy</arg>
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageDEPLOY_RPM" fetchMaterials="false">
+        <jobs>
+          <job name="jobDEPLOY_RPM">
+            <tasks>
+              <exec command="mvn" workingdir="ServiceDescription">
+                <arg>-Dmvn_version=0.194-SNAPSHOT</arg>
+                <arg>deploy</arg>
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stagePREPARE_RELEASE" fetchMaterials="false">
+        <jobs>
+          <job name="jobPREPARE_RELEASE">
+            <tasks>
+              <exec command="/opt/jenkins_ci_tools/scripts/prepareRelease.sh" workingdir="Function">
+                <arg>pom.xml</arg>
+                <arg>0.194-SNAPSHOT</arg>
+                <arg>ipt-orchestra-integration</arg>
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageDELOY_RELEASE" fetchMaterials="false">
+        <jobs>
+          <job name="jobDEPLOY_RELESASE">
+            <tasks>
+              <exec command="mvn" workingdir="Function">
+                <arg>deploy</arg>
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageReleaseRPM">
+        <jobs>
+          <job name="jobReleaseRPM">
+            <tasks>
+              <exec command="mvn" workingdir="ServiceDescription">
+                <arg>"versions:set"</arg>
+                <arg>-DnewVersion=0.194</arg>
+                <arg>-Dmvn_version=0.194</arg>
+                <arg>deploy</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageINCREMENT_VERSION_NUMBER" fetchMaterials="false">
+        <jobs>
+          <job name="jobINCREMENT_VERSION_NUMBER">
+            <tasks>
+              <exec command="mvn" workingdir="Function">
+                <arg>versions:set</arg>
+                <arg>-DnewVersion=0.195-SNAPSHOT</arg>
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageREBUILDAWS" fetchMaterials="false">
+        <jobs>
+          <job name="jobREBUILDAWS">
+            <tasks>
+              <exec command="/opt/jenkins_ci_tools/scripts/create-all.sh" />
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="pipelineBuildDockerContainer" isLocked="false">
+      <materials>
+        <pipeline pipelineName="orchestra-integration-live" stageName="stageREBUILDAWS" materialName="BuildAndDeploy" />
+      </materials>
+      <stage name="stageBuildDockerImage">
+        <jobs>
+          <job name="jobBuildDockerImage">
+            <tasks>
+              <exec command="/opt/jenkins_ci_tools/scripts/docker.sh">
+                <arg>build</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageRunDockerImage" fetchMaterials="false">
+        <jobs>
+          <job name="jobRunDockerImage">
+            <tasks>
+              <exec command="/opt/jenkins_ci_tools/scripts/docker.sh">
+                <arg>run</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+  </pipelines>
+  <templates>
+    <pipeline name="templateOrchestraIntegration">
+      <stage name="stageBuild" artifactCleanupProhibited="true" cleanWorkingDir="true">
+        <jobs>
+          <job name="jobOrchestraIntegrationBUILD">
+            <tasks>
+              <exec command="mvn" workingdir="Function">
+                <arg>clean</arg>
+                <arg>package</arg>
+              </exec>
+            </tasks>
+          </job>
+          <job name="jobOrchestraIntegrationDEPLOY">
+            <tasks>
+              <exec command="mvn" workingdir="ServiceDescription">
+                <arg>-Dmvn_version=0.194-SNAPSHOT</arg>
+                <arg>deploy</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+          <job name="jobPrepareRelease">
+            <tasks>
+              <exec command="/opt/jenkins_ci_tools/scripts/prepareRelease.sh" workingdir="Function">
+                <arg>pom.xml</arg>
+                <arg>0.194-SNAPSHOT</arg>
+                <arg>ipt-orchestra-integration</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+          <job name="jobDeployRelease">
+            <tasks>
+              <exec command="mvn" workingdir="Function">
+                <arg>deploy</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+          <job name="jobVersionPOM">
+            <tasks>
+              <exec command="mvn" workingdir="Function">
+                <arg>versions:set</arg>
+                <arg>-DnewVersion=0.195-SNAPSHOT</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+  </templates>
+  <environments>
+    <environment name="CI">
+      <environmentvariables>
+        <variable name="JAVA_HOME">
+          <value>/opt/jdk1.8.0_72/</value>
+        </variable>
+        <variable name="MAVEN_HOME">
+          <value>/opt/apache-maven-3.3.9</value>
+        </variable>
+        <variable name="PATH">
+          <value>/opt/jenkins_ci_tools/scripts:/opt/jdk1.8.0_72/bin:/opt/apache-maven-3.0.5/bin:/opt/jdk1.8.0_72//bin:/opt/apache-maven-3.0.5//bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin</value>
+        </variable>
+      </environmentvariables>
+    </environment>
+    <environment name="ci-live">
+      <environmentvariables>
+        <variable name="JAVA_HOME">
+          <value>/opt/jdk1.8.0_72/</value>
+        </variable>
+        <variable name="MAVEN_HOME">
+          <value>/opt/apache-maven-3.3.9</value>
+        </variable>
+        <variable name="PATH">
+          <value>/opt/jenkins_ci_tools/scripts:/opt/jdk1.8.0_72/bin:/opt/apache-maven-3.0.5/bin:/opt/jdk1.8.0_72//bin:/opt/apache-maven-3.0.5//bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin</value>
+        </variable>
+      </environmentvariables>
+      <agents>
+        <physical uuid="3a4c4767-0575-4b61-b4cb-a5b2f6290983" />
+      </agents>
+      <pipelines>
+        <pipeline name="orchestra-integration-live" />
+        <pipeline name="pipelineBuildDockerContainer" />
+      </pipelines>
+    </environment>
+  </environments>
+  <agents>
+    <agent hostname="localhost.localdomain" ipaddress="10.0.2.15" uuid="3a4c4767-0575-4b61-b4cb-a5b2f6290983" />
+  </agents>
+</cruise>
+
