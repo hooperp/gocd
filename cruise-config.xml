@@ -1,17 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cruise xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cruise-config.xsd" schemaVersion="77">
   <server artifactsdir="artifacts" commandRepositoryLocation="default" serverId="d06e36f2-1911-4e57-abe3-3f4d2c7e8025" />
-  <pipelines group="OrchestraIntegration">
-    <pipeline name="pipelineOrchestraBuildAndDeployToNexus" isLocked="false" template="templateBuildAndDeployToNexus">
+  <pipelines group="interpreter">
+    <pipeline name="interpreter" isLocked="false" template="templateBuildAndDeployToNexus">
       <materials>
-        <git url="ssh://git@stash.ipttools.info/" branch="develop" materialName="checkoutCode" />
+        <git url="ssh://git@stash.ipttools.info/ing/ipt-interpreter.git" branch="develop" materialName="checkoutCode" />
       </materials>
     </pipeline>
   </pipelines>
-  <pipelines group="BuildandRunDocker">
-    <pipeline name="Docker" isLocked="false">
+  <pipelines group="IdentityManagementWEBUI">
+    <pipeline name="IdentityManagementWEBUI" isLocked="false" template="templateBuildAndDeployToNexus">
       <materials>
-        <pipeline pipelineName="pipelineOrchestraBuildAndDeployToNexus" stageName="stageBUILD_AND_DEPLOY" materialName="BuildAndDeploy" />
+        <git url="ssh://git@stash.ipttools.info/id/ipt-ss-identity-management-webui.git" branch="develop" materialName="checkoutCode" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="IdentityManagement">
+    <pipeline name="IdentityManagement" isLocked="false" template="templateBuildAndDeployToNexus">
+      <materials>
+        <git url="ssh://git@stash.ipttools.info/id/ipt-ss-identity-management.git" branch="develop" materialName="checkoutCode" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="FileManagement">
+    <pipeline name="FileManagement" isLocked="false" template="templateBuildAndDeployToNexus">
+      <materials>
+        <git url="ssh://git@stash.ipttools.info/fm/ipt-ss-file-management.git" branch="develop" materialName="checkoutCode" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="CRSInterpreter">
+    <pipeline name="CRSInterpreter" isLocked="false" template="templateBuildAndDeployToNexus">
+      <materials>
+        <git url="ssh://git@stash.ipttools.info/ING/ipt-ss-crs-interpreter.git" branch="develop" materialName="checkoutCode" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="CIDInterpreter">
+    <pipeline name="CIDInterpreter" isLocked="false" template="templateBuildAndDeployToNexus">
+      <materials>
+        <git url="ssh://git@stash.ipttools.info/ING/ipt-ss-cid-interpreter.git" branch="develop" materialName="checkoutCode" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="BRPInterpreter">
+    <pipeline name="BRPInterpreter" isLocked="false" template="templateBuildAndDeployToNexus">
+      <materials>
+        <git url="ssh://git@stash.ipttools.info/ING/ipt-ss-brp-interpreter.git" branch="develop" materialName="checkoutCode" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="IdentityResolutionWEBUI">
+    <pipeline name="IdentityResolutionWEBUI" isLocked="false" template="templateBuildAndDeployToNexus">
+      <materials>
+        <git url="ssh://git@stash.ipttools.info/re/ipt-ms-identity-resolution-webui.git" branch="develop" materialName="checkoutCode" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="IdentityResolutionBPM">
+    <pipeline name="IdentityResolutionBPM" isLocked="false" template="templateBuildAndDeployToNexus">
+      <materials>
+        <git url="ssh://git@stash.ipttools.info/re/ipt-ms-identity-resolution-bpm.git" branch="develop" materialName="checkoutCode" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="CidApi">
+    <pipeline name="CidAPi" isLocked="false" template="templateBuildAndDeployToNexus">
+      <materials>
+        <git url="ssh://git@stash.ipttools.info/iias/cid-api.git" branch="develop" materialName="checkoutCode" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="EventHistory">
+    <pipeline name="ipt-as-event-history" isLocked="false" template="templateBuildAndDeployToNexus">
+      <materials>
+        <git url="ssh://git@stash.ipttools.info/ev/ipt-as-event-history.git" branch="develop" materialName="checkoutCode" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="OrchestraIntegration">
+    <pipeline name="BuildAndDeployToNexus_ORC" isLocked="false" template="templateBuildAndDeployToNexus">
+      <materials>
+        <git url="ssh://git@stash.ipttools.info/ipto/iptorchestraintegration.git" branch="develop" materialName="checkoutCode" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="Docker">
+    <pipeline name="BuildandRunDocker" isLocked="false">
+      <materials>
+        <pipeline pipelineName="BuildAndDeployToNexus_ORC" stageName="stageBUILD_AND_DEPLOY" materialName="BuildAndDeploy" />
       </materials>
       <stage name="stageBuildDockerImage">
         <approval type="manual" />
@@ -41,7 +118,7 @@
     </pipeline>
   </pipelines>
   <pipelines group="IdentityResolution">
-    <pipeline name="pipelineBuildAndDeployIdentityResolutionToNexus" isLocked="false" template="templateBuildAndDeployToNexus">
+    <pipeline name="BuildAndDeployToNexus_IR" isLocked="false" template="templateBuildAndDeployToNexus">
       <materials>
         <git url="ssh://git@stash.ipttools.info/re/ipt-ms-identity-resolution.git" branch="develop" materialName="checkoutCode" />
       </materials>
@@ -58,31 +135,6 @@
               </exec>
             </tasks>
           </job>
-        </jobs>
-      </stage>
-      <stage name="stageDEPLOY_RPM" fetchMaterials="false">
-        <jobs>
-          <job name="jobDEPLOY_RPM" />
-        </jobs>
-      </stage>
-      <stage name="stagePREPARE_RELEASE" fetchMaterials="false">
-        <jobs>
-          <job name="jobPREPARE_RELEASE" />
-        </jobs>
-      </stage>
-      <stage name="stageDELOY_RELEASE" fetchMaterials="false">
-        <jobs>
-          <job name="jobDEPLOY_RELESASE" />
-        </jobs>
-      </stage>
-      <stage name="stageReleaseRPM">
-        <jobs>
-          <job name="jobReleaseRPM" />
-        </jobs>
-      </stage>
-      <stage name="stageINCREMENT_VERSION_NUMBER" fetchMaterials="false">
-        <jobs>
-          <job name="jobINCREMENT_VERSION_NUMBER" />
         </jobs>
       </stage>
     </pipeline>
@@ -117,6 +169,8 @@
   </environments>
   <agents>
     <agent hostname="localhost.localdomain" ipaddress="10.0.2.15" uuid="3a4c4767-0575-4b61-b4cb-a5b2f6290983" />
+    <agent hostname="localhost.localdomain" ipaddress="10.0.2.15" uuid="5425021e-9866-4b60-a2bf-5cee19619f13" />
+    <agent hostname="localhost.localdomain" ipaddress="10.0.2.15" uuid="846038ff-489d-40a8-b416-9af77fe098a6" />
   </agents>
 </cruise>
 
