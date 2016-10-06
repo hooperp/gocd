@@ -1,0 +1,285 @@
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<cruise xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cruise-config.xsd" schemaVersion="87">
+  <server artifactsdir="artifacts" siteUrl="http://52.30.88.162:8153" agentAutoRegisterKey="b434a1ca-6bae-42e8-a8e1-d679cbef90e7" commandRepositoryLocation="default" serverId="718797b0-e0bc-4da4-8777-9a50362effa9" />
+  <pipelines group="BuildAndPublishApplications">
+    <pipeline name="Application1">
+      <materials>
+        <git url="https://github.com/hooperp/vocalink-test-app.git" materialName="Application1-SourceCode" />
+      </materials>
+      <stage name="stageBuildContainer-vocalink-test-app-1">
+        <jobs>
+          <job name="jobBuildContainer-vocalink-test-app-1">
+            <tasks>
+              <exec command="vocalink-test-app/src/BuildAndPublishApplication.sh">
+                <arg>vocalink-test-app-1</arg>
+                <arg>Build</arg>
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageSaveContainer-vocalink-test-app-1">
+        <jobs>
+          <job name="jobSaveContainer-vocalink-test-app-1">
+            <tasks>
+              <exec command="vocalink-test-app/src/BuildAndPublishApplication.sh">
+                <arg>vocalink-test-app-1</arg>
+                <arg>Save</arg>
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stagePublishContainer-vocalink-test-app-1">
+        <jobs>
+          <job name="jobPublishContainer-vocalink-test-app-1">
+            <tasks>
+              <exec command="vocalink-test-app/src/BuildAndPublishApplication.sh">
+                <arg>vocalink-test-app-1</arg>
+                <arg>Publish</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="Application2">
+      <materials>
+        <git url="https://github.com/hooperp/vocalink-test-app.git" materialName="Application2-SourceCode" />
+        <pipeline pipelineName="Application1" stageName="stagePublishContainer-vocalink-test-app-1" materialName="Application1-PublishContainer" />
+      </materials>
+      <stage name="stageBuildContainer-vocalink-test-app-2">
+        <jobs>
+          <job name="jobBuildContainer-vocalink-test-app-2">
+            <tasks>
+              <exec command="vocalink-test-app/src/BuildAndPublishApplication.sh">
+                <arg>vocalink-test-app-2</arg>
+                <arg>Build</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageSaveContainer-vocalink-test-app-2">
+        <jobs>
+          <job name="jobSaveContainer-vocalink-test-app-2">
+            <tasks>
+              <exec command="vocalink-test-app/src/BuildAndPublishApplication.sh">
+                <arg>vocalink-test-app-2</arg>
+                <arg>Save</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stagePublishContainer-vocalink-test-app-2">
+        <jobs>
+          <job name="jobPublishContainer-vocalink-test-app-2">
+            <tasks>
+              <exec command="vocalink-test-app/src/BuildAndPublishApplication.sh">
+                <arg>vocalink-test-app-2</arg>
+                <arg>Publish</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="Application3">
+      <materials>
+        <git url="https://github.com/hooperp/vocalink-test-app.git" materialName="Application3-SourceCode" />
+        <pipeline pipelineName="Application2" stageName="stagePublishContainer-vocalink-test-app-2" materialName="Application2-PublishContainer" />
+      </materials>
+      <stage name="stageBuildContainer-vocalink-test-app-3">
+        <jobs>
+          <job name="jobBuildContainer-vocalink-test-app-3">
+            <tasks>
+              <exec command="vocalink-test-app/src/BuildAndPublishApplication.sh">
+                <arg>vocalink-test-app-3</arg>
+                <arg>Build</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageSaveContainer-vocalink-test-app-3">
+        <jobs>
+          <job name="jobSaveContainer-vocalink-test-app-3">
+            <tasks>
+              <exec command="vocalink-test-app/src/BuildAndPublishApplication.sh">
+                <arg>vocalink-test-app-3</arg>
+                <arg>Save</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stagePublishContainer-vocalink-test-app-3">
+        <jobs>
+          <job name="jobPublishContainer-vocalink-test-app-3">
+            <tasks>
+              <exec command="vocalink-test-app/src/BuildAndPublishApplication.sh">
+                <arg>vocalink-test-app-3</arg>
+                <arg>Publish</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+  </pipelines>
+  <pipelines group="InstallApplications">
+    <pipeline name="DeployEnvironment" isLocked="false">
+      <materials>
+        <git url="https://github.com/hooperp/vocalink-test-app.git" materialName="BuildEnvironment-SourceCode" />
+        <pipeline pipelineName="Application3" stageName="stagePublishContainer-vocalink-test-app-3" materialName="Application3-PublishContainer" />
+      </materials>
+      <stage name="stageStopApplicationStack">
+        <jobs>
+          <job name="jobStopApplicationStack">
+            <tasks>
+              <exec command="/usr/bin/rancher-compose" workingdir="vocalink-test-app/deploy">
+                <arg>--project-name</arg>
+                <arg>vocalink-demo</arg>
+                <arg>--url</arg>
+                <arg>http://52.30.88.162:8080/v1/</arg>
+                <arg>--access-key</arg>
+                <arg>3429D52AF2E81215C155</arg>
+                <arg>--secret-key</arg>
+                <arg>efr8EroVFivPRZxebkdeb7onrHN8arh2drz97yK4</arg>
+                <arg>--verbose</arg>
+                <arg>stop</arg>
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageDeleteApplicationStack">
+        <jobs>
+          <job name="jobDeleteApplicationStack">
+            <tasks>
+              <exec command="/usr/bin/rancher-compose" workingdir="vocalink-test-app/deploy">
+                <arg>--project-name</arg>
+                <arg>vocalink-demo</arg>
+                <arg>--url</arg>
+                <arg>http://52.30.88.162:8080/v1/</arg>
+                <arg>--access-key</arg>
+                <arg>3429D52AF2E81215C155</arg>
+                <arg>--secret-key</arg>
+                <arg>efr8EroVFivPRZxebkdeb7onrHN8arh2drz97yK4</arg>
+                <arg>--verbose</arg>
+                <arg>rm --force</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageCreateApplicationStack" cleanWorkingDir="true">
+        <jobs>
+          <job name="jobCreateApplicationStack">
+            <tasks>
+              <exec command="/usr/bin/rancher-compose" workingdir="vocalink-test-app/deploy">
+                <arg>--project-name</arg>
+                <arg>vocalink-demo</arg>
+                <arg>--url</arg>
+                <arg>http://52.30.88.162:8080/v1/</arg>
+                <arg>--access-key</arg>
+                <arg>3429D52AF2E81215C155</arg>
+                <arg>--secret-key</arg>
+                <arg>efr8EroVFivPRZxebkdeb7onrHN8arh2drz97yK4</arg>
+                <arg>--verbose</arg>
+                <arg>create</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageStartApplicationStack">
+        <jobs>
+          <job name="jobStartApplicationStack">
+            <tasks>
+              <exec command="/usr/bin/rancher-compose" workingdir="vocalink-test-app/deploy">
+                <arg>--project-name</arg>
+                <arg>vocalink-demo</arg>
+                <arg>--url</arg>
+                <arg>http://52.30.88.162:8080/v1/</arg>
+                <arg>--access-key</arg>
+                <arg>3429D52AF2E81215C155</arg>
+                <arg>--secret-key</arg>
+                <arg>efr8EroVFivPRZxebkdeb7onrHN8arh2drz97yK4</arg>
+                <arg>--verbose</arg>
+                <arg>start</arg>
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="TestTheEnvironment" isLocked="false">
+      <materials>
+        <pipeline pipelineName="DeployEnvironment" stageName="stageStartApplicationStack" />
+      </materials>
+      <stage name="stageSleep">
+        <jobs>
+          <job name="jobSleep">
+            <tasks>
+              <exec command="/bin/sleep">
+                <arg>20</arg>
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageEnvironmentTest">
+        <jobs>
+          <job name="jobEnvironmentTest">
+            <tasks>
+              <exec command="/usr/bin/curl">
+                <arg>-v</arg>
+                <arg>-L</arg>
+                <arg>http://52.30.88.162:8081</arg>
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+  </pipelines>
+  <environments>
+    <environment name="vocalink-demo">
+      <environmentvariables>
+        <variable name="DOCKER_USERNAME">
+          <value>phooper0001</value>
+        </variable>
+        <variable name="DOCKER_PASSWORD" secure="true">
+          <encryptedValue>j3GKMoYM2Ek19aiw+JIKcQ==</encryptedValue>
+        </variable>
+      </environmentvariables>
+      <agents>
+        <physical uuid="beb171ad-3865-4d73-957a-a1f2ec8608b2" />
+      </agents>
+      <pipelines>
+        <pipeline name="TestTheEnvironment" />
+        <pipeline name="DeployEnvironment" />
+        <pipeline name="Application1" />
+        <pipeline name="Application2" />
+        <pipeline name="Application3" />
+      </pipelines>
+    </environment>
+  </environments>
+  <agents>
+    <agent hostname="ip-10-0-1-10" ipaddress="127.0.0.1" uuid="beb171ad-3865-4d73-957a-a1f2ec8608b2" />
+  </agents>
+</cruise>
+
