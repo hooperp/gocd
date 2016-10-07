@@ -1,5 +1,3 @@
-
-
 <?xml version="1.0" encoding="utf-8"?>
 <cruise xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cruise-config.xsd" schemaVersion="87">
   <server artifactsdir="artifacts" siteUrl="http://52.30.88.162:8153" agentAutoRegisterKey="b434a1ca-6bae-42e8-a8e1-d679cbef90e7" commandRepositoryLocation="default" serverId="718797b0-e0bc-4da4-8777-9a50362effa9" />
@@ -8,7 +6,7 @@
       <materials>
         <git url="https://github.com/hooperp/vocalink-test-app.git" materialName="Application1-SourceCode" />
       </materials>
-      <stage name="stageBuildContainer-vocalink-test-app-1">
+      <stage name="stageBuildContainer-vocalink-test-app-1" cleanWorkingDir="true">
         <jobs>
           <job name="jobBuildContainer-vocalink-test-app-1">
             <tasks>
@@ -20,7 +18,7 @@
           </job>
         </jobs>
       </stage>
-      <stage name="stageSaveContainer-vocalink-test-app-1">
+      <stage name="stageSaveContainer-vocalink-test-app-1" fetchMaterials="false">
         <jobs>
           <job name="jobSaveContainer-vocalink-test-app-1">
             <tasks>
@@ -32,7 +30,7 @@
           </job>
         </jobs>
       </stage>
-      <stage name="stagePublishContainer-vocalink-test-app-1">
+      <stage name="stagePublishContainer-vocalink-test-app-1" fetchMaterials="false">
         <jobs>
           <job name="jobPublishContainer-vocalink-test-app-1">
             <tasks>
@@ -51,7 +49,7 @@
         <git url="https://github.com/hooperp/vocalink-test-app.git" materialName="Application2-SourceCode" />
         <pipeline pipelineName="Application1" stageName="stagePublishContainer-vocalink-test-app-1" materialName="Application1-PublishContainer" />
       </materials>
-      <stage name="stageBuildContainer-vocalink-test-app-2">
+      <stage name="stageBuildContainer-vocalink-test-app-2" cleanWorkingDir="true">
         <jobs>
           <job name="jobBuildContainer-vocalink-test-app-2">
             <tasks>
@@ -64,7 +62,7 @@
           </job>
         </jobs>
       </stage>
-      <stage name="stageSaveContainer-vocalink-test-app-2">
+      <stage name="stageSaveContainer-vocalink-test-app-2" fetchMaterials="false">
         <jobs>
           <job name="jobSaveContainer-vocalink-test-app-2">
             <tasks>
@@ -77,7 +75,7 @@
           </job>
         </jobs>
       </stage>
-      <stage name="stagePublishContainer-vocalink-test-app-2">
+      <stage name="stagePublishContainer-vocalink-test-app-2" fetchMaterials="false">
         <jobs>
           <job name="jobPublishContainer-vocalink-test-app-2">
             <tasks>
@@ -96,7 +94,7 @@
         <git url="https://github.com/hooperp/vocalink-test-app.git" materialName="Application3-SourceCode" />
         <pipeline pipelineName="Application2" stageName="stagePublishContainer-vocalink-test-app-2" materialName="Application2-PublishContainer" />
       </materials>
-      <stage name="stageBuildContainer-vocalink-test-app-3">
+      <stage name="stageBuildContainer-vocalink-test-app-3" cleanWorkingDir="true">
         <jobs>
           <job name="jobBuildContainer-vocalink-test-app-3">
             <tasks>
@@ -109,7 +107,7 @@
           </job>
         </jobs>
       </stage>
-      <stage name="stageSaveContainer-vocalink-test-app-3">
+      <stage name="stageSaveContainer-vocalink-test-app-3" fetchMaterials="false">
         <jobs>
           <job name="jobSaveContainer-vocalink-test-app-3">
             <tasks>
@@ -122,7 +120,7 @@
           </job>
         </jobs>
       </stage>
-      <stage name="stagePublishContainer-vocalink-test-app-3">
+      <stage name="stagePublishContainer-vocalink-test-app-3" fetchMaterials="false">
         <jobs>
           <job name="jobPublishContainer-vocalink-test-app-3">
             <tasks>
@@ -143,61 +141,35 @@
         <git url="https://github.com/hooperp/vocalink-test-app.git" materialName="BuildEnvironment-SourceCode" />
         <pipeline pipelineName="Application3" stageName="stagePublishContainer-vocalink-test-app-3" materialName="Application3-PublishContainer" />
       </materials>
-      <stage name="stageStopApplicationStack">
+      <stage name="stageStopApplicationStack" cleanWorkingDir="true">
         <jobs>
           <job name="jobStopApplicationStack">
             <tasks>
-              <exec command="/usr/bin/rancher-compose" workingdir="vocalink-test-app/deploy">
-                <arg>--project-name</arg>
-                <arg>vocalink-demo</arg>
-                <arg>--url</arg>
-                <arg>http://52.30.88.162:8080/v1/</arg>
-                <arg>--access-key</arg>
-                <arg>3429D52AF2E81215C155</arg>
-                <arg>--secret-key</arg>
-                <arg>efr8EroVFivPRZxebkdeb7onrHN8arh2drz97yK4</arg>
-                <arg>--verbose</arg>
+              <exec command="./runit.sh" workingdir="vocalink-test-app/deploy">
                 <arg>stop</arg>
-              </exec>
-            </tasks>
-          </job>
-        </jobs>
-      </stage>
-      <stage name="stageDeleteApplicationStack">
-        <jobs>
-          <job name="jobDeleteApplicationStack">
-            <tasks>
-              <exec command="/usr/bin/rancher-compose" workingdir="vocalink-test-app/deploy">
-                <arg>--project-name</arg>
-                <arg>vocalink-demo</arg>
-                <arg>--url</arg>
-                <arg>http://52.30.88.162:8080/v1/</arg>
-                <arg>--access-key</arg>
-                <arg>3429D52AF2E81215C155</arg>
-                <arg>--secret-key</arg>
-                <arg>efr8EroVFivPRZxebkdeb7onrHN8arh2drz97yK4</arg>
-                <arg>--verbose</arg>
-                <arg>rm --force</arg>
                 <runif status="passed" />
               </exec>
             </tasks>
           </job>
         </jobs>
       </stage>
-      <stage name="stageCreateApplicationStack" cleanWorkingDir="true">
+      <stage name="stageDeleteApplicationStack" fetchMaterials="false">
+        <jobs>
+          <job name="jobDeleteApplicationStack">
+            <tasks>
+              <exec command="./runit.sh" workingdir="vocalink-test-app/deploy">
+                <arg>"rm --force"</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="stageCreateApplicationStack" fetchMaterials="false">
         <jobs>
           <job name="jobCreateApplicationStack">
             <tasks>
-              <exec command="/usr/bin/rancher-compose" workingdir="vocalink-test-app/deploy">
-                <arg>--project-name</arg>
-                <arg>vocalink-demo</arg>
-                <arg>--url</arg>
-                <arg>http://52.30.88.162:8080/v1/</arg>
-                <arg>--access-key</arg>
-                <arg>3429D52AF2E81215C155</arg>
-                <arg>--secret-key</arg>
-                <arg>efr8EroVFivPRZxebkdeb7onrHN8arh2drz97yK4</arg>
-                <arg>--verbose</arg>
+              <exec command="./runit.sh" workingdir="vocalink-test-app/deploy">
                 <arg>create</arg>
                 <runif status="passed" />
               </exec>
@@ -205,21 +177,13 @@
           </job>
         </jobs>
       </stage>
-      <stage name="stageStartApplicationStack">
+      <stage name="stageStartApplicationStack" fetchMaterials="false">
         <jobs>
           <job name="jobStartApplicationStack">
             <tasks>
-              <exec command="/usr/bin/rancher-compose" workingdir="vocalink-test-app/deploy">
-                <arg>--project-name</arg>
-                <arg>vocalink-demo</arg>
-                <arg>--url</arg>
-                <arg>http://52.30.88.162:8080/v1/</arg>
-                <arg>--access-key</arg>
-                <arg>3429D52AF2E81215C155</arg>
-                <arg>--secret-key</arg>
-                <arg>efr8EroVFivPRZxebkdeb7onrHN8arh2drz97yK4</arg>
-                <arg>--verbose</arg>
+              <exec command="./runit.sh" workingdir="vocalink-test-app/deploy">
                 <arg>start</arg>
+                <runif status="passed" />
               </exec>
             </tasks>
           </job>
@@ -230,7 +194,7 @@
       <materials>
         <pipeline pipelineName="DeployEnvironment" stageName="stageStartApplicationStack" />
       </materials>
-      <stage name="stageSleep">
+      <stage name="stageSleep" fetchMaterials="false">
         <jobs>
           <job name="jobSleep">
             <tasks>
@@ -241,7 +205,7 @@
           </job>
         </jobs>
       </stage>
-      <stage name="stageEnvironmentTest">
+      <stage name="stageEnvironmentTest" fetchMaterials="false">
         <jobs>
           <job name="jobEnvironmentTest">
             <tasks>
@@ -262,12 +226,18 @@
         <variable name="DOCKER_USERNAME">
           <value>phooper0001</value>
         </variable>
+        <variable name="RANCHER_ACCESS_KEY">
+          <value>097B622B52BE6CED73A1</value>
+        </variable>
         <variable name="DOCKER_PASSWORD" secure="true">
           <encryptedValue>j3GKMoYM2Ek19aiw+JIKcQ==</encryptedValue>
         </variable>
+        <variable name="RANCHER_SECRET_KEY" secure="true">
+          <encryptedValue>HslTxzuUA17S5Tq52J0dr3x4swtHdmP73VbFhW/Woomz73bXZNq7OxnGQyHqnEta</encryptedValue>
+        </variable>
       </environmentvariables>
       <agents>
-        <physical uuid="beb171ad-3865-4d73-957a-a1f2ec8608b2" />
+        <physical uuid="40af2b01-4425-459c-ac40-04d23d072f44" />
       </agents>
       <pipelines>
         <pipeline name="TestTheEnvironment" />
@@ -279,7 +249,6 @@
     </environment>
   </environments>
   <agents>
-    <agent hostname="ip-10-0-1-10" ipaddress="127.0.0.1" uuid="beb171ad-3865-4d73-957a-a1f2ec8608b2" />
+    <agent hostname="3bfbb8a2b3be" ipaddress="172.17.0.3" uuid="40af2b01-4425-459c-ac40-04d23d072f44" />
   </agents>
 </cruise>
-
